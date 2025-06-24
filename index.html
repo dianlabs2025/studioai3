@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dianlabs AI Prompt</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base styling for body */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Custom scrollbar for textareas for better aesthetics */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Styling for the loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7); /* Semi-transparent white background */
+            display: flex;
+            flex-direction: column; /* Align items vertically */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensure it's on top of other content */
+        }
+        /* Styling for the spinner animation */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1); /* Light grey border for spinner track */
+            border-top: 4px solid #4f46e5; /* Blue border for the spinning part */
+            border-radius: 50%; /* Make it a circle */
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite; /* Spin animation */
+        }
+        /* Keyframes for the spinner animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Styling for the custom message box */
+        .message-box {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Dark semi-transparent background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001; /* Ensure it's on top of loading overlay */
+        }
+        .message-box-content {
+            background: #fff; /* White background for message content */
+            padding: 2rem;
+            border-radius: 0.75rem; /* Rounded corners */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 p-4 sm:p-8 text-gray-800">
+    <div class="max-w-5xl mx-auto bg-white p-6 sm:p-10 rounded-xl shadow-2xl">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-center text-indigo-800 mb-6 sm:mb-8">
+            VEO 3 PROMPT GENERATOR
+        </h1>
+        <p class="text-center text-gray-600 mb-8 sm:mb-10 text-sm sm:text-base">
+            Isi detail di bawah ini untuk membuat prompt video Anda. Semakin detail input Anda, semakin baik hasil yang akan Anda dapatkan dari Veo 3.
+        </p>
+
+        <div class="grid grid-cols-1 gap-y-4 sm:gap-y-6">
+
+            <!-- Subject Input Section -->
+            <div class="p-4 sm:p-5 bg-indigo-50 rounded-lg shadow-inner">
+                <label for="subject" class="block text-base sm:text-lg font-semibold text-indigo-700 mb-1 sm:mb-2">
+                    1. Subjek:
+                </label>
+                <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
+                    (Siapa atau apa yang menjadi fokus utama video? Contoh: Seorang barista, Seekor anjing Golden Retriever, Sebuah mobil sport)
+                </p>
+                <input
+                    type="text"
+                    id="subject"
+                    class="w-full p-2 sm:p-3 border border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
+                    placeholder="Masukkan subjek video Anda..."
+                >
+            </div>
+
+            <!-- Action Input Section -->
+            <div class="p-4 sm:p-5 bg-purple-50 rounded-lg shadow-inner">
+                <label for="action" class="block text-base sm:text-lg font-semibold text-purple-700 mb-1 sm:mb-2">
+                    2. Aksi:
+                </label>
+                <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
+                    (Apa yang sedang dilakukan subjek? Kata kerja utama dalam video. Contoh: sedang membuat kopi, sedang berlari di pantai, melaju di jalan tol)
+                </p>
+                <input
+                    type="text"
+                    id="action"
+                    class="w-full p-2 sm:p-3 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
+                    placeholder="Jelaskan aksi subjek..."
+                >
+            </div>
+
+            <!-- Expression Input Section -->
+            <div class="p-4 sm:p-5 bg-indigo-50 rounded-lg shadow-inner">
+                <label for="expression" class="block text-base sm:text-lg font-semibold text-indigo-700 mb-1 sm:mb-2">
+                    3. Ekspresi (untuk karakter):
+                </label>
+                <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
+                    (Bagaimana ekspresi wajah atau suasana hati subjek jika itu karakter? Contoh: gembira, serius, cemas, tenang)
+                </p>
+                <input
+                    type="text"
+                    id="expression"
+                    class="w-full p-2 sm:p-3 border border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
+                    placeholder="Gambarkan ekspresi karakter..."
+                >
+            </div>
+
+            <!-- Place Input Section -->
+            <div class="p-4 sm:p-5 bg-purple-50 rounded-lg shadow-inner">
+                <label for="place" class="block text-base sm:text-lg font-semibold text-purple-700 mb-1 sm:mb-2">
+                    4. Tempat:
+                </label>
+                <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
+                    (Di mana adegan ini berlangsung? Lingkungan atau latar belakang video. Contoh: di kafe modern, di pantai saat matahari terbit, di jalan pegunungan bersalju)
+                </p>
+                <input
+                    type="text"
+                    id="place"
+                    class="w-full p-2 sm:p-3 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
+                    placeholder="Deskripsikan latar tempat..."
+                >
+            </div>
+
+            <!-- Time Input Section -->
+            <div class="p-4 sm:p-5 bg-indigo-50 rounded-lg shadow-inner">
+                <label for="time" class="block text-base sm:text-lg font-semibold text-indigo-700 mb-1 sm:mb-2">
+                    5. Waktu:
+                </label>
+                <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
+                    (Kapan adegan ini berlangsung? Contoh: pagi hari, senja, malam hari, di masa depan, era 80-an)
+                </p>
+                <input
+                    type="text"
+                    id="time"
+                    class="w-full p-2 sm:p-3 border border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
+                    placeholder="Tentukan waktu adegan..."
+                >
+            </div>
+
+            <!-- Camera Movement Input Section -->
+            <div class="p-4 sm:p-5 bg-purple-50 rounded-lg shadow-inner">
+                <label class="block text-base sm:text-lg font-semibold text-purple-700 mb-1 sm:mb-2">
+                    6. Gerakan Kamera:
+                </label>
+                <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
+                    (Pilih jenis gerakan kamera. Anda bisa memilih lebih dari satu.)
+                </p>
+                <div id="camera-motions-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+                    <!-- Camera motions will be injected here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Lighting Input Section -->
+            <div class="p-4 sm:p-5 bg-indigo-50 rounded-lg shadow-inner">
+                <label for="lighting" class="block text-base sm:text-lg font-semibold text-indigo-700 mb-1 sm:mb-2">
+                    7. Pencahayaan:
+                </label>
+                <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
+                    (Bagaimana pencahayaan adegan? Contoh: cahaya alami, pencahayaan dramatis, neon terang, remang-remang)
+                </p>
+                <input
+                    type="text"
+                    id="lighting"
+                    class="w-full p-2 sm:p-3 border border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
+                    placeholder="Gambarkan pencahayaan..."
+                >
+            </div>
+
+            <!-- Video Style Input Section -->
+            <div class="p-4 sm:p-5 bg-purple-50 rounded-lg shadow-inner">
+                <label for="videoStyle" class="block text-base sm:text-lg font-semibold text-purple-700 mb-1 sm:mb-2">
+                    8. Gaya Video:
+                </label>
+                <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
+                    (Gaya visual atau genre video. Contoh: sinematik, seperti lukisan cat air, stop-motion, dokumenter, anime, futuristik, retro 80-an)
+                </p>
+                <input
+                    type="text"
+                    id="videoStyle"
+                    class="w-full p-2 sm:p-3 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
+                    placeholder="Tentukan gaya visual video..."
+                >
+            </div>
+
+            <!-- Video Atmosphere Input Section -->
+            <div class="p-4 sm:p-5 bg-indigo-50 rounded-lg shadow-inner">
+                <label for="videoAtmosphere" class="block text-base sm:text-lg font-semibold text-indigo-700 mb-1 sm:mb-2">
+                    9. Suasana Video:
+                </label>
+                <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
+                    (Bagaimana perasaan atau atmosfer yang ingin Anda sampaikan? Contoh: gembira, melankolis, menegangkan, tenang, epik)
+                </p>
+                <input
+                    type="text"
+                    id="videoAtmosphere"
+                    class="w-full p-2 sm:p-3 border border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
+                    placeholder="Gambarkan suasana video..."
+                >
+            </div>
+
+            <!-- Sound or Music Input Section -->
+            <div class="p-4 sm:p-5 bg-purple-50 rounded-lg shadow-inner">
+                <label for="soundMusic" class="block text-base sm:text-lg font-semibold text-purple-700 mb-1 sm:mb-2">
+                    10. Suara atau Musik:
+                </label>
+                <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
+                    (Jenis suara atau musik latar yang Anda inginkan. Contoh: melodi piano lembut, suara ombak, musik elektronik upbeat, suara kota ramai, tidak ada suara)
+                </p>
+                <input
+                    type="text"
+                    id="soundMusic"
+                    class="w-full p-2 sm:p-3 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
+                    placeholder="Deskripsikan suara atau musik..."
+                >
+            </div>
+
+            <!-- Dialog Characters Input Section -->
+            <div class="p-4 sm:p-5 bg-indigo-50 rounded-lg shadow-inner">
+                <label class="block text-base sm:text-lg font-semibold text-indigo-700 mb-1 sm:mb-2">
+                    11. Subjek Karakter Dialog:
+                </label>
+                <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
+                    (Tambahkan karakter yang akan berdialog. Minimal 2 orang.)
+                </p>
+                <div id="characters-container">
+                    <!-- Initial character inputs will be added by JavaScript -->
+                </div>
+                <button
+                    type="button"
+                    id="add-character-btn"
+                    class="mt-4 px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200 shadow-md flex items-center justify-center text-sm sm:text-base"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Tambah Karakter
+                </button>
+            </div>
+
+            <!-- Additional Details Input Section -->
+            <div class="p-4 sm:p-5 bg-purple-50 rounded-lg shadow-inner">
+                <label for="additionalDetails" class="block text-base sm:text-lg font-semibold text-purple-700 mb-1 sm:mb-2">
+                    13. Detail Tambahan:
+                </label>
+                <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">
+                    (Detail lain yang belum tercakup di atas, seperti properti spesifik, interaksi, atau instruksi komposisi. Contoh: ada secangkir kopi di meja, fokus pada tangan subjek, warna dominan biru)
+                </p>
+                <textarea
+                    id="additionalDetails"
+                    class="w-full p-2 sm:p-3 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 h-24 sm:h-28 resize-y text-sm sm:text-base"
+                    placeholder="Tambahkan detail penting lainnya..."
+                ></textarea>
+            </div>
+
+            <button
+                id="generate-prompt-btn"
+                class="mt-6 sm:mt-8 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-lg sm:text-xl rounded-lg shadow-lg hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105 transition duration-300 ease-in-out self-center"
+            >
+                Generate Prompt!
+            </button>
+
+            <!-- New Button for Suggestions -->
+            <button
+                id="get-suggestions-btn"
+                class="mt-4 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-teal-600 text-white font-bold text-lg sm:text-xl rounded-lg shadow-lg hover:from-green-600 hover:to-teal-700 transform hover:scale-105 transition duration-300 ease-in-out self-center"
+            >
+                ✨ Dapatkan Saran Pengayaan Prompt
+            </button>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="spinner"></div>
+            <p class="ml-4 text-indigo-700 text-lg font-semibold" id="loading-message">Generating prompt with AI...</p>
+        </div>
+
+        <!-- Output Section -->
+        <div id="output-section" class="mt-12 sm:mt-16 p-6 sm:p-8 bg-white rounded-xl shadow-2xl border-t-4 border-indigo-500 hidden">
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-center text-indigo-800 mb-6 sm:mb-8">
+                Hasil Prompt Video Anda
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                <!-- Indonesian Prompt Output -->
+                <div>
+                    <h3 class="text-lg sm:text-xl font-bold text-indigo-700 mb-3 sm:mb-4">
+                        Prompt Bahasa Indonesia (Dapat Diedit)
+                    </h3>
+                    <textarea
+                        id="indonesian-prompt-output"
+                        class="w-full p-3 sm:p-4 border border-gray-300 rounded-md bg-gray-50 font-mono text-xs sm:text-sm leading-relaxed h-80 sm:h-96 resize-y"
+                    ></textarea>
+                </div>
+
+                <!-- English Prompt Output -->
+                <div>
+                    <h3 class="text-lg sm:text-xl font-bold text-purple-700 mb-3 sm:mb-4">
+                        A Short, Detailed Prompt (Final Veo 3 ready)
+                    </h3>
+                    <textarea
+                        id="english-prompt-output"
+                        class="w-full p-3 sm:p-4 border border-gray-300 rounded-md bg-gray-100 font-mono text-xs sm:text-sm leading-relaxed h-80 sm:h-96 resize-y"
+                        readonly
+                    ></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Section for Suggestions -->
+        <div id="suggestions-output-section" class="mt-8 p-6 sm:p-8 bg-blue-50 rounded-xl shadow-inner border-t-4 border-blue-300 hidden">
+            <h3 class="text-xl sm:text-2xl font-extrabold text-center text-blue-800 mb-6">
+                Saran Pengayaan Prompt ✨
+            </h3>
+            <textarea
+                id="ai-suggestions-output"
+                class="w-full p-3 sm:p-4 border border-blue-300 rounded-md bg-blue-100 font-mono text-xs sm:text-sm leading-relaxed h-60 resize-y"
+                readonly
+                placeholder="Saran pengayaan dari AI akan muncul di sini."
+            ></textarea>
+            <p class="text-sm text-gray-600 mt-4 text-center">
+                Salin dan tempel saran di atas ke kolom yang sesuai untuk memperkaya prompt Anda, lalu klik "Generate Prompt!" lagi.
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Message Box HTML -->
+    <div id="message-box" class="message-box hidden">
+        <div class="message-box-content">
+            <p id="message-content" class="text-lg font-semibold text-gray-800 mb-4"></p>
+            <button id="message-ok-btn" class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-200">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // State variables to hold form data and API keys
+        const state = {
+            // IMPORTANT: PLACE YOUR GEMINI API KEYS DIRECTLY IN THIS ARRAY
+            // If you have multiple keys, separate them with commas.
+            // Example: apiKeys: ['YOUR_API_KEY_1', 'YOUR_API_KEY_2', 'YOUR_API_KEY_3', 'YOUR_API_KEY_4', 'YOUR_API_KEY_5'],
+            apiKeys: ['AIzaSyDc6qBN4k-YmBKHbkDH0CU9Qs02X4C6fRg', 'AIzaSyB2esGvpcN5J7i-6z8zVdHG82l_oeF_Qn8', 'AIzaSyBEuqn_ojxTds3SkIT11KotolzRiMLhITE', 'AIzaSyAEOSmVewnsVFukwRq7gyEY83C78Zd7tP8'], // <-- PASTE YOUR API KEYS HERE, e.g., ['AIzaSyA...', 'AIzaSyB...']
+            currentApiKeyIndex: 0, // Index of the currently used API key
+            subject: '',
+            action: '',
+            expression: '',
+            place: '',
+            time: '',
+            cameraMotions: [], // Stores uniqueKeys of selected camera motions
+            lighting: '',
+            videoStyle: '',
+            videoAtmosphere: '',
+            soundMusic: '',
+            characters: [{ id: 1, name: '', dialog: '' }, { id: 2, name: '', dialog: '' }], // Start with 2 characters
+            additionalDetails: '',
+        };
+
+        // All possible camera motions with unique keys for correct rendering
+        const allCameraMotions = [
+            // Consolidated Common & Higgsfield, prioritizing Higgsfield's specific terms
+            { en: '3D Rotation', id: 'Rotasi 3D', uniqueKey: '3DRotation' },
+            { en: 'Arc', id: 'Busur', uniqueKey: 'Arc' },
+            { en: 'Boom (Vertical Lift)', id: 'Ledakan (Angkat Vertikal)', uniqueKey: 'Boom' },
+            { en: 'Bullet Time', id: 'Waktu Peluru', uniqueKey: 'BulletTime' },
+            { en: 'Crane (High Vertical)', id: 'Derek (Vertikal Tinggi)', uniqueKey: 'Crane' },
+            { en: 'Dolly (In/Out)', id: 'Dorong (Masuk/Keluar)', uniqueKey: 'Dolly' },
+            { en: 'Drone', id: 'Drone', uniqueKey: 'Drone' },
+            { en: 'Fly Through', id: 'Terbang Melewati', uniqueKey: 'FlyThrough' },
+            { en: 'Handheld (Shaky)', id: 'Genggam (Goyah)', uniqueKey: 'Handheld' },
+            { en: 'Hyperlapse', id: 'Hiperlapse', uniqueKey: 'Hyperlapse' },
+            { en: 'Jib (Short Vertical)', id: 'Jib (Vertikal Pendek)', uniqueKey: 'Jib' },
+            { en: 'Orbit', id: 'Orbit', uniqueKey: 'Orbit' },
+            { en: 'Pan (Horizontal)', id: 'Geser (Horizontal)', uniqueKey: 'Pan' },
+            { en: 'POV (Point of View)', id: 'Sudut Pandang (POV)', uniqueKey: 'POV' },
+            { en: 'Push In', id: 'Dorong Masuk', uniqueKey: 'PushIn' },
+            { en: 'Push Out', id: 'Dorong Keluar', uniqueKey: 'PushOut' },
+            { en: 'Rack Focus', id: 'Fokus Rak', uniqueKey: 'RackFocus' },
+            { en: 'Reveal', id: 'Mengungkap', uniqueKey: 'Reveal' },
+            { en: 'Roll', id: 'Guling', uniqueKey: 'Roll' },
+            { en: 'Sequence Shot', id: 'Shot Berurutan', uniqueKey: 'SequenceShot' },
+            { en: 'Spiral', id: 'Spiral', uniqueKey: 'Spiral' },
+            { en: 'Static (Fixed)', id: 'Statis (Tetap)', uniqueKey: 'Static' },
+            { en: 'Steadicam (Smooth Follow)', id: 'Stabil (Ikuti Halus)', uniqueKey: 'Steadicam' },
+            { en: 'Tilt (Vertical)', id: 'Miring (Vertikal)', uniqueKey: 'Tilt' },
+            { en: 'Timewarp', id: 'Distorsi Waktu', uniqueKey: 'Timewarp' },
+            { en: 'Track (Parallel Follow)', id: 'Lacak (Ikuti Paralel)', uniqueKey: 'Track' },
+            { en: 'Travel', id: 'Bepergian', uniqueKey: 'Travel' }, 
+            { en: 'Twist', id: 'Putar', uniqueKey: 'Twist' },
+            { en: 'Vertigo', id: 'Vertigo', uniqueKey: 'Vertigo' },
+            { en: 'Whip Pan', id: 'Geser Cepat', uniqueKey: 'WhipPan' },
+            { en: 'Zoom (Lens Only)', id: 'Perbesar/Perkecil (Lensa Saja)', uniqueKey: 'Zoom' },
+        ];
+
+        /**
+         * Displays or hides the loading overlay and updates message.
+         * @param {boolean} show - True to show, false to hide.
+         * @param {string} [message] - Optional message to display.
+         */
+        function showLoading(show, message = 'Generating prompt with AI...') {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingMessage = document.getElementById('loading-message');
+            loadingMessage.textContent = message;
+            if (show) {
+                loadingOverlay.classList.remove('hidden');
+            } else {
+                loadingOverlay.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Displays a custom message box.
+         * @param {string} message - The message to display.
+         */
+        function showMessage(message) {
+            const msgBox = document.getElementById('message-box');
+            const msgContent = document.getElementById('message-content');
+            const msgOkBtn = document.getElementById('message-ok-btn');
+
+            msgContent.textContent = message;
+            msgBox.classList.remove('hidden');
+
+            msgOkBtn.onclick = () => {
+                msgBox.classList.add('hidden');
+            };
+        }
+
+        /**
+         * Renders the camera motion checkboxes into the DOM.
+         */
+        function renderCameraMotions() {
+            const container = document.getElementById('camera-motions-container');
+            container.innerHTML = ''; // Clear existing motions
+            allCameraMotions.forEach(motion => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center';
+                // Using motion.uniqueKey for both id and value to ensure uniqueness and proper state tracking
+                div.innerHTML = `
+                    <input
+                        type="checkbox"
+                        id="camera-${motion.uniqueKey}"
+                        value="${motion.uniqueKey}"
+                        class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                    >
+                    <label for="camera-${motion.uniqueKey}" class="ml-2 text-xs sm:text-sm font-medium text-gray-700">
+                        ${motion.en} (${motion.id})
+                    </label>
+                `;
+                const checkbox = div.querySelector('input');
+                // Set initial checked state
+                checkbox.checked = state.cameraMotions.includes(motion.uniqueKey);
+                // Attach event listener
+                checkbox.addEventListener('change', handleCameraMotionChange);
+                container.appendChild(div);
+            });
+        }
+
+        /**
+         * Handles changes to the camera motion checkboxes.
+         * @param {Event} event - The change event object.
+         */
+        function handleCameraMotionChange(event) {
+            const { value, checked } = event.target; // value here is motion.uniqueKey
+            if (checked) {
+                state.cameraMotions.push(value);
+            } else {
+                state.cameraMotions = state.cameraMotions.filter(motionKey => motionKey !== value);
+            }
+        }
+
+        /**
+         * Renders the character input fields into the DOM.
+         */
+        function renderCharacters() {
+            const container = document.getElementById('characters-container');
+            container.innerHTML = ''; // Clear existing characters
+
+            state.characters.forEach((char, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex flex-col sm:flex-row gap-2 sm:gap-4 mb-3 sm:mb-4 p-3 sm:p-4 border border-indigo-200 rounded-md bg-indigo-100';
+                div.innerHTML = `
+                    <div class="flex-1">
+                        <label for="char-name-${char.id}" class="block text-xs sm:text-sm font-medium text-indigo-600 mb-1">
+                            Karakter ${index + 1} (Nama/Deskripsi):
+                        </label>
+                        <input
+                            type="text"
+                            id="char-name-${char.id}"
+                            class="w-full p-2 border border-indigo-300 rounded-md focus:ring-1 focus:ring-indigo-400 transition duration-200 text-sm"
+                            value="${char.name}"
+                            placeholder="Nama Karakter ${index + 1}..."
+                        >
+                    </div>
+                    <div class="flex-1">
+                        <label for="char-dialog-${char.id}" class="block text-xs sm:text-sm font-medium text-indigo-600 mb-1">
+                            Kalimat yang Diucapkan:
+                        </label>
+                        <input
+                            type="text"
+                            id="char-dialog-${char.id}"
+                            class="w-full p-2 border border-indigo-300 rounded-md focus:ring-1 focus:ring-indigo-400 transition duration-200 text-sm"
+                            value="${char.dialog}"
+                            placeholder="Dialog karakter..."
+                        >
+                    </div>
+                    ${state.characters.length > 2 ? `
+                    <button
+                        type="button"
+                        data-char-id="${char.id}"
+                        class="self-end sm:self-center px-3 py-1 sm:px-4 sm:py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-200 shadow-sm text-xs sm:text-sm"
+                    >
+                        Hapus
+                    </button>` : ''}
+                `;
+
+                // Attach event listeners for name and dialog changes
+                div.querySelector(`#char-name-${char.id}`).addEventListener('input', (e) => {
+                    const charId = parseInt(e.target.id.split('-')[2]);
+                    const charIndex = state.characters.findIndex(c => c.id === charId);
+                    if (charIndex !== -1) { state.characters[charIndex].name = e.target.value; }
+                });
+                div.querySelector(`#char-dialog-${char.id}`).addEventListener('input', (e) => {
+                    const charId = parseInt(e.target.id.split('-')[2]);
+                    const charIndex = state.characters.findIndex(c => c.id === charId);
+                    if (charIndex !== -1) { state.characters[charIndex].dialog = e.target.value; }
+                });
+
+                // Attach event listener for remove button
+                const removeBtn = div.querySelector('button[data-char-id]');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', (e) => {
+                        const charIdToRemove = parseInt(e.target.dataset.charId);
+                        state.characters = state.characters.filter(c => c.id !== charIdToRemove);
+                        renderCharacters(); // Re-render characters after removal
+                    });
+                }
+
+                container.appendChild(div);
+            });
+        }
+
+        /**
+         * Adds a new character input field.
+         */
+        function addCharacter() {
+            const newId = state.characters.length > 0 ? Math.max(...state.characters.map(c => c.id)) + 1 : 1;
+            state.characters.push({ id: newId, name: '', dialog: '' });
+            renderCharacters(); // Re-render characters to show new field
+        }
+
+        /**
+         * Helper to build the Indonesian prompt string from current state.
+         * @param {object} currentState - The current state object.
+         * @returns {string} - The constructed Indonesian prompt string.
+         */
+        function buildIndonesianPromptString(currentState) {
+            let prompt = '';
+            prompt += currentState.subject ? `Sebuah video dengan subjek utama: **${currentState.subject}**.\n` : '';
+            prompt += currentState.action ? `Subjek sedang: **${currentState.action}**.\n` : '';
+            prompt += currentState.expression ? `Dengan ekspresi: **${currentState.expression}**.\n` : '';
+            prompt += currentState.place ? `Berlatar tempat: **${currentState.place}**.\n` : '';
+            prompt += currentState.time ? `Pada waktu: **${currentState.time}**.\n` : '';
+
+            if (currentState.cameraMotions.length > 0) {
+                const selectedMotionsId = currentState.cameraMotions.map(motionUniqueKey => {
+                    const found = allCameraMotions.find(m => m.uniqueKey === motionUniqueKey);
+                    return found ? found.id : ''; // Get Indonesian translation
+                }).filter(Boolean).join(', '); // Filter out empty strings
+                prompt += `Gerakan kamera yang digunakan: **${selectedMotionsId}**.\n`;
+            }
+
+            prompt += currentState.lighting ? `Pencahayaan: **${currentState.lighting}**.\n` : '';
+            prompt += currentState.videoStyle ? `Gaya video: **${currentState.videoStyle}**.\n` : '';
+            prompt += currentState.videoAtmosphere ? `Suasana video: **${currentState.videoAtmosphere}**.\n` : '';
+            prompt += currentState.soundMusic ? `Dengan suara atau musik: **${currentState.soundMusic}**.\n` : '';
+
+            const activeCharacters = currentState.characters.filter(c => c.name.trim() !== '' || c.dialog.trim() !== '');
+            if (activeCharacters.length > 0) {
+                prompt += `Subjek karakter dialog melibatkan ${activeCharacters.length} orang:\n`;
+                activeCharacters.forEach(char => {
+                    prompt += `- **${char.name || 'Karakter tanpa nama'}**: `;
+                    prompt += char.dialog ? `Mengucapkan "${char.dialog}".\n` : 'Tidak mengucapkan dialog.\n';
+                });
+            }
+
+            prompt += currentState.additionalDetails ? `Detail tambahan: **${currentState.additionalDetails}**.\n` : '';
+            return prompt;
+        }
+
+        /**
+         * Calls the Gemini API to translate and enhance the prompt or get suggestions.
+         * @param {string} promptToSend - The prompt to send to Gemini.
+         * @param {string} currentApiKey - The API key to use for the current attempt.
+         * @returns {Promise<string>} - A promise that resolves with the generated text from Gemini.
+         */
+        async function callGeminiAPI(promptToSend, currentApiKey) {
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: promptToSend }] });
+            const payload = { contents: chatHistory };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${currentApiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('API Error:', errorData);
+                // Throw error with status to differentiate between key issues and other errors
+                throw new Error(`API request failed with status ${response.status}: ${JSON.stringify(errorData)}`);
+            }
+
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                return result.candidates[0].content.parts[0].text;
+            } else {
+                console.warn("Gemini API response structure unexpected or content missing.");
+                throw new Error("Unexpected API response structure or no content from Gemini.");
+            }
+        }
+
+        /**
+         * Generates the Indonesian and English prompts based on current state.
+         */
+        async function generatePrompt() {
+            try {
+                if (state.apiKeys.length === 0) {
+                    showMessage('Mohon masukkan API Key Anda di bagian JavaScript kode ini.');
+                    return;
+                }
+
+                state.currentApiKeyIndex = 0; // Reset index for a new generation attempt
+                showLoading(true, 'Menyusun prompt...');
+
+                // Get current values from all input fields
+                state.subject = document.getElementById('subject').value.trim();
+                state.action = document.getElementById('action').value.trim();
+                state.expression = document.getElementById('expression').value.trim();
+                state.place = document.getElementById('place').value.trim();
+                state.time = document.getElementById('time').value.trim();
+                state.lighting = document.getElementById('lighting').value.trim();
+                state.videoStyle = document.getElementById('videoStyle').value.trim();
+                state.videoAtmosphere = document.getElementById('videoAtmosphere').value.trim();
+                state.soundMusic = document.getElementById('soundMusic').value.trim();
+                state.additionalDetails = document.getElementById('additionalDetails').value.trim();
+
+                const idPrompt = buildIndonesianPromptString(state);
+                document.getElementById('indonesian-prompt-output').value = idPrompt;
+
+                let englishPromptFromAI = '';
+                let apiCallSuccessful = false;
+
+                while (!apiCallSuccessful && state.currentApiKeyIndex < state.apiKeys.length) {
+                    const currentKey = state.apiKeys[state.currentApiKeyIndex];
+                    showLoading(true, `Menggunakan API Key #${state.currentApiKeyIndex + 1} dari ${state.apiKeys.length} untuk terjemahan...`);
+                    try {
+                        const promptToGemini = `
+Translate the following Indonesian video prompt into a highly detailed and descriptive English prompt for Veo 3. Ensure it captures all nuances and elaborates on elements where possible, making it ready for direct use in an AI video generation model. Do not explicitly state "A video featuring" if the subject is clear from the context. If there are dialogues, maintain them exactly as they are provided, without translation.
+
+Indonesian Prompt:
+${idPrompt}
+
+English Prompt (for Veo 3):
+`;
+                        englishPromptFromAI = await callGeminiAPI(promptToGemini, currentKey);
+                        apiCallSuccessful = true;
+                    } catch (error) {
+                        console.error(`Error with API Key #${state.currentApiKeyIndex + 1}:`, error);
+                        state.currentApiKeyIndex++;
+                        if (state.currentApiKeyIndex < state.apiKeys.length) {
+                            showLoading(true, `API Key #${state.currentApiKeyIndex + 1} gagal. Mencoba API Key berikutnya...`);
+                            await new Promise(resolve => setTimeout(resolve, 1500));
+                        } else {
+                            englishPromptFromAI = "Semua API Key gagal menghasilkan prompt. Mohon periksa kunci Anda atau coba lagi nanti.";
+                            console.error("All API keys failed to generate prompt.");
+                        }
+                    }
+                }
+
+                if (!apiCallSuccessful) {
+                    englishPromptFromAI = "Gagal menghasilkan prompt Bahasa Inggris setelah mencoba semua API Key yang tersedia. Mohon periksa kunci Anda atau koneksi internet.";
+                }
+
+                document.getElementById('english-prompt-output').value = englishPromptFromAI;
+
+                const outputSection = document.getElementById('output-section');
+                outputSection.classList.remove('hidden');
+                outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            } catch (outerError) {
+                console.error("Terjadi kesalahan tak terduga selama pembuatan prompt:", outerError);
+                showMessage("Terjadi kesalahan tak terduga saat membuat prompt. Mohon coba lagi. Detail: " + outerError.message);
+            } finally {
+                showLoading(false); // Ensure loading stops in all cases
+            }
+        }
+
+        /**
+         * Fetches prompt enrichment suggestions from Gemini API.
+         */
+        async function getSuggestions() {
+            try {
+                if (state.apiKeys.length === 0) {
+                    showMessage('Mohon masukkan API Key Anda di bagian JavaScript kode ini.');
+                    return;
+                }
+
+                state.currentApiKeyIndex = 0; // Reset index for a new attempt
+                showLoading(true, 'Mendapatkan saran pengayaan dari AI...');
+
+                // Get current values from all input fields
+                state.subject = document.getElementById('subject').value.trim();
+                state.action = document.getElementById('action').value.trim();
+                state.expression = document.getElementById('expression').value.trim();
+                state.place = document.getElementById('place').value.trim();
+                state.time = document.getElementById('time').value.trim();
+                state.lighting = document.getElementById('lighting').value.trim();
+                state.videoStyle = document.getElementById('videoStyle').value.trim();
+                state.videoAtmosphere = document.getElementById('videoAtmosphere').value.trim();
+                state.soundMusic = document.getElementById('soundMusic').value.trim();
+                state.additionalDetails = document.getElementById('additionalDetails').value.trim();
+                
+                const currentIdPrompt = buildIndonesianPromptString(state);
+
+                let suggestionsFromAI = '';
+                let apiCallSuccessful = false;
+
+                while (!apiCallSuccessful && state.currentApiKeyIndex < state.apiKeys.length) {
+                    const currentKey = state.apiKeys[state.currentApiKeyIndex];
+                    showLoading(true, `Mendapatkan saran dengan API Key #${state.currentApiKeyIndex + 1} dari ${state.apiKeys.length}...`);
+                    try {
+                        const promptToGeminiForSuggestions = `
+Berdasarkan detail prompt video Bahasa Indonesia berikut, berikan saran pengayaan yang kreatif dan singkat (maksimal 2 kalimat per kategori) untuk setiap kategori yang relevan agar prompt lebih vivid dan menarik untuk model AI video seperti Veo 3. Fokus pada penambahan detail deskriptif yang kaya. Jangan menerjemahkan prompt asli atau dialog.
+
+Format output saran per kategori:
+Subjek: [Saran pengayaan]
+Aksi: [Saran pengayaan]
+Ekspresi: [Saran pengayaan]
+Tempat: [Saran pengayaan]
+Waktu: [Saran pengayaan]
+Gerakan Kamera: [Saran pengayaan]
+Pencahayaan: [Saran pengayaan]
+Gaya Video: [Saran pengayaan]
+Suasana Video: [Saran pengayaan]
+Suara atau Musik: [Saran pengayaan]
+Detail Tambahan: [Saran pengayaan]
+
+---
+Prompt Video Anda:
+${currentIdPrompt}
+---
+Saran Pengayaan:
+`;
+                                suggestionsFromAI = await callGeminiAPI(promptToGeminiForSuggestions, currentKey);
+                                apiCallSuccessful = true;
+                            } catch (error) {
+                                console.error(`Error getting suggestions with API Key #${state.currentApiKeyIndex + 1}:`, error);
+                                state.currentApiKeyIndex++;
+                                if (state.currentApiKeyIndex < state.apiKeys.length) {
+                                    showLoading(true, `API Key #${state.currentApiKeyIndex + 1} gagal untuk saran. Mencoba API Key berikutnya...`);
+                                    await new Promise(resolve => setTimeout(resolve, 1500));
+                                } else {
+                                    suggestionsFromAI = "Semua API Key gagal mendapatkan saran. Mohon periksa kunci Anda atau coba lagi nanti.";
+                                }
+                            }
+                        }
+
+                        if (!apiCallSuccessful) {
+                            suggestionsFromAI = "Gagal mendapatkan saran pengayaan setelah mencoba semua API Key yang tersedia. Mohon periksa kunci Anda atau koneksi internet.";
+                        }
+
+                        document.getElementById('ai-suggestions-output').value = suggestionsFromAI;
+                        const suggestionsOutputSection = document.getElementById('suggestions-output-section');
+                        suggestionsOutputSection.classList.remove('hidden');
+                        suggestionsOutputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    } catch (outerError) {
+                        console.error("Terjadi kesalahan tak terduga selama mendapatkan saran:", outerError);
+                        showMessage("Terjadi kesalahan tak terduga saat mendapatkan saran. Mohon coba lagi. Detail: " + outerError.message);
+                    } finally {
+                        showLoading(false);
+                    }
+                }
+
+
+                document.addEventListener('DOMContentLoaded', () => {
+                    // IMPORTANT: Place your Gemini API keys directly in this array
+                    // If you have multiple keys, separate them with commas.
+                    // Example: state.apiKeys = ['AIzaSyA_YourKey1...', 'AIzaSyB_YourKey2...', 'AIzaSyC_YourKey3...'];
+                    state.apiKeys = ['AIzaSyDc6qBN4k-YmBKHbkDH0CU9Qs02X4C6fRg', 'AIzaSyB2esGvpcN5J7i-6z8zVdHG82l_oeF_Qn8', 'AIzaSyBEuqn_ojxTds3SkIT11KotolzRiMLhITE', 'AIzaSyAEOSmVewnsVFukwRq7gyEY83C78Zd7tP8']; // <-- PASTE YOUR API KEYS HERE, e.g., ['YOUR_KEY_1', 'YOUR_KEY_2']
+
+                    renderCameraMotions();
+                    renderCharacters();
+
+                    document.getElementById('add-character-btn').addEventListener('click', addCharacter);
+                    document.getElementById('generate-prompt-btn').addEventListener('click', generatePrompt);
+                    document.getElementById('get-suggestions-btn').addEventListener('click', getSuggestions);
+
+                    document.getElementById('subject').addEventListener('input', (e) => state.subject = e.target.value.trim());
+                    document.getElementById('action').addEventListener('input', (e) => state.action = e.target.value.trim());
+                    document.getElementById('expression').addEventListener('input', (e) => state.expression = e.target.value.trim());
+                    document.getElementById('place').addEventListener('input', (e) => state.place = e.target.value.trim());
+                    document.getElementById('time').addEventListener('input', (e) => state.time = e.target.value.trim());
+                    document.getElementById('lighting').addEventListener('input', (e) => state.lighting = e.target.value.trim());
+                    document.getElementById('videoStyle').addEventListener('input', (e) => state.videoStyle = e.target.value.trim());
+                    document.getElementById('videoAtmosphere').addEventListener('input', (e) => state.videoAtmosphere = e.target.value.trim());
+                    document.getElementById('soundMusic').addEventListener('input', (e) => state.soundMusic = e.target.value.trim());
+                    document.getElementById('additionalDetails').addEventListener('input', (e) => state.additionalDetails = e.target.value.trim());
+                });
+            </script>
+        </body>
+        </html>
